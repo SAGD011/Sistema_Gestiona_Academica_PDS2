@@ -65,6 +65,41 @@ export function MainApplication() {
     }
   }, [router]);
 
+  // 🔐 Auto logout por inactividad (3 minutos)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!user) return; // solo si hay sesión válida
+
+    let inactivityTimeout: ReturnType<typeof setTimeout>;
+
+    const logout = () => {
+      try {
+        window.localStorage.removeItem(USER_STORAGE_KEY);
+      } catch (e) {
+        console.error("Error limpiando localStorage en logout:", e);
+      }
+      router.push("/login");
+    };
+
+    const resetTimer = () => {
+      if (inactivityTimeout) clearTimeout(inactivityTimeout);
+      inactivityTimeout = setTimeout(() => {
+        logout();
+      }, 3 * 60 * 1000); // 3 minutos
+    };
+
+    const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+
+    events.forEach((evt) => window.addEventListener(evt, resetTimer));
+    // iniciar el timer cuando entra al módulo
+    resetTimer();
+
+    return () => {
+      if (inactivityTimeout) clearTimeout(inactivityTimeout);
+      events.forEach((evt) => window.removeEventListener(evt, resetTimer));
+    };
+  }, [user, router]);
+
   // Solo ADMINISTRADOR puede ver la pestaña Roles
   const canViewRoles =
     !!user &&
