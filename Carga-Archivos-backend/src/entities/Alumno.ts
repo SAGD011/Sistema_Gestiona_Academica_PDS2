@@ -54,6 +54,7 @@ export class Alumno {
   @Column({ name: "promedio_periodo", type: "numeric", precision: 5, scale: 2, nullable: true })
   promedioPeriodo!: number | null;
 
+  // Nuevos campos añadidos
   @Column({ name: "materias_aprobadas", type: "int", default: 0 })
   aprobadas!: number;
 
